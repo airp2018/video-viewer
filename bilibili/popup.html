@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bilibili Assistant</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 400px;
+      max-width: 800px;
+      width: 100%;
+      min-height: 500px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #fb7299, #00a1d6);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      position: relative; /* 让右上角齿轮定位到头部容器 */
+    }
+
+    /* 右上角设置齿轮按钮 */
+    .settings-btn {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 6px;
+      line-height: 1;
+      border-radius: 6px;
+      transition: background 0.2s ease;
+    }
+    .settings-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: #fb7299;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #e85a87;
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .video-info {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tab-nav {
+      display: flex;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+      background: #fb7299;
+      color: white;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .quality-option {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .quality-option:last-child {
+      border-bottom: none;
+    }
+    
+    .quality-option input {
+      margin-right: 10px;
+    }
+
+    /* Markdown样式 */
+    .markdown-content h1,
+    .markdown-content h2,
+    .markdown-content h3,
+    .markdown-content h4,
+    .markdown-content h5,
+    .markdown-content h6 {
+      font-weight: bold;
+      margin: 16px 0 8px 0;
+      color: #333;
+    }
+
+    .markdown-content h1 {
+      font-size: 18px;
+      border-bottom: 2px solid #fb7299;
+      padding-bottom: 4px;
+    }
+
+    .markdown-content h2 {
+      font-size: 16px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 2px;
+    }
+
+    .markdown-content h3 {
+      font-size: 15px;
+    }
+
+    .markdown-content h4 {
+      font-size: 14px;
+    }
+
+    .markdown-content strong,
+    .markdown-content b {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .markdown-content em,
+    .markdown-content i {
+      font-style: italic;
+    }
+
+    .markdown-content ul,
+    .markdown-content ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .markdown-content li {
+      margin: 4px 0;
+    }
+
+    .markdown-content p {
+      margin: 8px 0;
+    }
+
+    .markdown-content code {
+      background: #f1f1f1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .markdown-content pre {
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    .markdown-content blockquote {
+      border-left: 4px solid #fb7299;
+      padding-left: 12px;
+      margin: 8px 0;
+      color: #666;
+      font-style: italic;
+    }
+
+    /* 字体大小设置 */
+    .font-small {
+      font-size: 12px !important;
+    }
+
+    .font-medium {
+      font-size: 14px !important;
+    }
+
+    .font-large {
+      font-size: 16px !important;
+    }
+
+    /* TIPS样式 */
+    .tip-item {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      padding: 15px;
+      transition: all 0.3s;
+    }
+
+    .tip-item:hover {
+      border-color: #fb7299;
+      box-shadow: 0 2px 8px rgba(251, 114, 153, 0.1);
+    }
+
+    .tip-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .tip-number {
+      background: #fb7299;
+      color: white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    .tip-timestamp {
+      background: #e8f4fd;
+      color: #1976d2;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .tip-timestamp:hover {
+      background: #1976d2;
+      color: white;
+    }
+
+    .tip-content {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .tip-original {
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+      border-left: 3px solid #fb7299;
+    }
+
+    .analysis-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .analysis-item {
+      text-align: center;
+      padding: 8px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .analysis-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #fb7299;
+    }
+
+    .analysis-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    /* 产品模式样式 */
+    .tip-item:hover {
+      background: #f8f9fa;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(251, 114, 153, 0.15);
+    }
+
+    .tip-item.clickable {
+      cursor: pointer;
+    }
+
+    .tip-item.clickable:hover .tip-timestamp {
+      background: #fb7299;
+      color: white;
+      transform: scale(1.05);
+    }
+
+    /* 内联样式移到CSS中 */
+    #video-title {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .ai-summary-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    #subtitle-status, #timestamp-subtitle-status {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #f0f0f0;
+    }
+
+    #summary-result {
+      display: none;
+    }
+
+    #summary-content {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .follow-up-section {
+      margin-top: 15px;
+    }
+
+    #follow-up-question {
+      width: 100%;
+      height: 60px;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      resize: vertical;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .generate-answer-btn {
+      margin-top: 8px;
+      width: 100%;
+    }
+
+    .timestamp-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    #tips-result {
+      display: none;
+    }
+
+    #video-analysis-info {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    #tips-content {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .subtitle-loading {
+      color: #666;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .audio-description {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 15px;
+    }
+
+    .settings-section {
+      margin: 10px 0;
+    }
+
+    .settings-label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .settings-input, .settings-select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎵 Bilibili Assistant</h1>
+    <p>音频下载 & 字幕提取 & AI总结</p>
+    <button id="settings-gear-btn" class="settings-btn" aria-label="设置">⚙️</button>
+  </div>
+  
+  <div class="content">
+    <div class="video-info">
+      <h3>当前页面</h3>
+      <p id="page-info">检测中...</p>
+      <p id="video-title"></p>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="summary">🤖 总结</button>
+      <button class="tab-btn" data-tab="timestamp">⏰ 时间戳</button>
+      <button class="tab-btn" data-tab="subtitle">📝 字幕</button>
+      <button class="tab-btn" data-tab="audio">🎵 音频</button>
+    </div>
+    
+    <!-- Summary Tab -->
+    <div id="summary-tab" class="tab-content active">
+      <div class="video-info">
+        <h4>🤖 AI总结</h4>
+        <p class="ai-summary-description">
+          基于视频字幕，使用AI生成内容摘要
+        </p>
+
+        <!-- 字幕状态 -->
+        <div id="subtitle-status">
+          🔄 检测字幕中...
+        </div>
+
+        <button class="btn btn-primary" id="ai-summary-btn" disabled>
+          ✨ 生成AI总结
+        </button>
+      </div>
+
+      <!-- 总结结果 -->
+      <div id="summary-result" class="video-info">
+        <h4>📋 总结</h4>
+        <div id="summary-content" class="markdown-content">
+        </div>
+
+        <!-- 继续提问功能 -->
+        <div class="follow-up-section">
+          <textarea id="follow-up-question" placeholder="继续提问..."></textarea>
+          <button class="btn btn-primary generate-answer-btn" id="generate-answer-btn">
+            ✨ 生成答案
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timestamp Tab -->
+    <div id="timestamp-tab" class="tab-content">
+      <div class="video-info">
+        <h4>⏰ 智能时间戳导航</h4>
+        <p class="timestamp-description">
+          基于AI分析视频字幕，提取关键要点并定位时间戳
+        </p>
+
+        <!-- 字幕状态 -->
+        <div id="timestamp-subtitle-status">
+          🔄 检测字幕中...
+        </div>
+
+        <button class="btn btn-primary" id="generate-tips-btn" disabled>
+          ✨ 生成智能导航
+        </button>
+      </div>
+
+      <!-- TIPS结果 -->
+      <div id="tips-result" class="video-info">
+        <h4>🎯 视频导航 TIPS</h4>
+        <div id="video-analysis-info">
+          <!-- 视频分析概况将在这里显示 -->
+        </div>
+        <div id="tips-content">
+          <!-- TIPS内容将在这里显示 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Subtitle Tab -->
+    <div id="subtitle-tab" class="tab-content">
+      <div class="video-info">
+        <h4>📝 可用字幕</h4>
+        <div id="subtitle-list">
+          <p class="subtitle-loading">
+            正在检测字幕...
+          </p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="subtitle-download-btn">
+        📝 下载字幕
+      </button>
+
+      <div class="video-info">
+        <h4>字幕格式</h4>
+        <div id="subtitle-format-options">
+          <div class="quality-option">
+            <input type="radio" name="subtitle-format" value="srt" id="sub-srt" checked>
+            <label for="sub-srt">SRT (通用)</label>
+          </div>
+          <div class="quality-option">
+            <input type="radio" name="subtitle-format" value="ass" id="sub-ass">
+            <label for="sub-ass">ASS (高级)</label>
+          </div>
+          <div class="quality-option">
+            <input type="radio" name="subtitle-format" value="txt" id="sub-txt">
+            <label for="sub-txt">TXT (纯文本)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audio Tab -->
+    <div id="audio-tab" class="tab-content">
+      <div class="video-info">
+        <h4>🎵 音频下载</h4>
+        <p class="audio-description">
+          下载当前视频的音频文件（MP3格式）
+        </p>
+      </div>
+
+      <button class="btn btn-primary" id="audio-download-btn">
+        🎵 下载音频
+      </button>
+    </div>
+    
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+
+
+      <div class="video-info">
+        <h4>显示设置</h4>
+        <div class="settings-section">
+          <label class="settings-label">答案字体大小</label>
+          <select id="font-size-setting" class="settings-select">
+            <option value="small">小 (12px)</option>
+            <option value="medium" selected>中 (14px)</option>
+            <option value="large">大 (16px)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="video-info">
+        <h4>AI设置</h4>
+        <div class="settings-section">
+          <label class="settings-label">AI服务商</label>
+          <select id="ai-provider" class="settings-select">
+            <option value="gemini">Google Gemini</option>
+            <option value="siliconflow">SiliconFlow</option>
+          </select>
+        </div>
+        <div class="settings-section">
+          <label class="settings-label">API Base URL</label>
+          <input type="text" id="api-base-url" placeholder="API服务器地址" class="settings-input">
+        </div>
+        <div class="settings-section">
+          <label class="settings-label">API密钥</label>
+          <input type="password" id="api-key" placeholder="请输入API密钥" class="settings-input">
+        </div>
+        <div class="settings-section">
+          <label class="settings-label">模型ID</label>
+          <input type="text" id="model-id" placeholder="如: gemini-2.5-flash, gpt-4o-mini" class="settings-input">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-settings-btn">
+        💾 保存设置
+      </button>
+
+      <!-- 缓存管理 -->
+      <div class="video-info" style="margin-top: 15px;">
+        <h4>🗑️ 缓存管理</h4>
+        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
+          缓存字幕、AI分析和时间戳导航，避免重复处理
+        </p>
+        <div id="cache-stats" style="margin-bottom: 15px;">
+          <p style="margin: 5px 0;"><strong>缓存视频数：</strong><span id="cache-count">0</span> 个</p>
+          <p style="margin: 5px 0;"><strong>缓存大小：</strong><span id="cache-size">0</span> MB</p>
+        </div>
+        <button class="btn btn-primary" id="clear-cache-btn" style="background: #dc3545;">
+          🗑️ 清空所有缓存
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

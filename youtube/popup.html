@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Assistant</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-width: 400px;
+      max-width: 800px;
+      width: 100%;
+      min-height: 500px;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #ff0000, #cc0000);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .content {
+      padding: 20px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    .btn-primary {
+      background: #ff0000;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #cc0000;
+    }
+    
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .video-info {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tab-nav {
+      display: flex;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .tab-btn.active {
+      background: #ff0000;
+      color: white;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .quality-option {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .quality-option:last-child {
+      border-bottom: none;
+    }
+    
+    .quality-option input {
+      margin-right: 10px;
+    }
+
+    /* Markdown样式 */
+    .markdown-content h1,
+    .markdown-content h2,
+    .markdown-content h3,
+    .markdown-content h4,
+    .markdown-content h5,
+    .markdown-content h6 {
+      font-weight: bold;
+      margin: 16px 0 8px 0;
+      color: #333;
+    }
+
+    .markdown-content h1 {
+      font-size: 18px;
+      border-bottom: 2px solid #ff0000;
+      padding-bottom: 4px;
+    }
+
+    .markdown-content h2 {
+      font-size: 16px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 2px;
+    }
+
+    .markdown-content h3 {
+      font-size: 15px;
+    }
+
+    .markdown-content h4 {
+      font-size: 14px;
+    }
+
+    .markdown-content strong,
+    .markdown-content b {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .markdown-content em,
+    .markdown-content i {
+      font-style: italic;
+    }
+
+    .markdown-content ul,
+    .markdown-content ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .markdown-content li {
+      margin: 4px 0;
+    }
+
+    .markdown-content p {
+      margin: 8px 0;
+    }
+
+    .markdown-content code {
+      background: #f1f1f1;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .markdown-content pre {
+      background: #f1f1f1;
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    .markdown-content blockquote {
+      border-left: 4px solid #ff0000;
+      padding-left: 12px;
+      margin: 8px 0;
+      color: #666;
+      font-style: italic;
+    }
+
+    .subtitle-track {
+      padding: 10px;
+      margin: 5px 0;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border-left: 4px solid #ff0000;
+    }
+
+    .subtitle-track h5 {
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+
+    .subtitle-track p {
+      margin: 0;
+      font-size: 12px;
+      color: #666;
+    }
+
+
+
+    .current-sentence {
+      background: #ffeb3b;
+      padding: 2px 4px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🎬 YouTube Assistant</h1>
+    <p>字幕下载 & AI分析助手</p>
+  </div>
+  
+  <div class="content">
+    <div class="video-info">
+      <h3>当前页面</h3>
+      <p id="page-info">检测中...</p>
+      <p id="video-title" style="font-size: 12px; color: #666; margin-top: 5px;"></p>
+    </div>
+    
+    <!-- Tab Navigation -->
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="summary">🤖 总结</button>
+      <button class="tab-btn" data-tab="timestamp">⏰ 时间戳</button>
+      <button class="tab-btn" data-tab="subtitle">📝 字幕</button>
+      <button class="tab-btn" data-tab="settings">⚙️ 设置</button>
+    </div>
+    
+    <!-- Summary Tab -->
+    <div id="summary-tab" class="tab-content active">
+      <div class="video-info">
+        <h4>🤖 AI总结</h4>
+        <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+          基于视频字幕，使用AI生成内容摘要
+        </p>
+
+        <!-- 字幕状态 -->
+        <div id="subtitle-status" style="margin-bottom: 15px; padding: 10px; border-radius: 6px; font-size: 13px; background: #f0f0f0;">
+          🔄 检测字幕中...
+        </div>
+
+        <button class="btn btn-primary" id="ai-summary-btn" disabled>
+          ✨ 生成AI总结
+        </button>
+      </div>
+
+      <!-- 总结结果 -->
+      <div id="summary-result" class="video-info" style="display: none;">
+        <h4>📋 总结</h4>
+        <div id="summary-content" class="markdown-content" style="background: #f8f9fa; padding: 15px; border-radius: 6px; font-size: 16px; line-height: 1.6; max-height: 300px; overflow-y: auto;">
+        </div>
+
+        <!-- 继续提问功能 -->
+        <div style="margin-top: 15px;">
+          <textarea id="follow-up-question" placeholder="继续提问..." style="width: 100%; height: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; font-size: 14px; font-family: inherit; box-sizing: border-box;"></textarea>
+          <button class="btn btn-primary" id="generate-answer-btn" style="margin-top: 8px; width: 100%;">
+            ✨ 生成答案
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timestamp Tab -->
+    <div id="timestamp-tab" class="tab-content">
+      <div class="video-info">
+        <h4>⏰ 智能时间戳</h4>
+        <p style="font-size: 14px; color: #666; margin-bottom: 10px;">
+          AI分析字幕内容，提取核心要点并精确定位时间戳，点击可直接跳转。
+        </p>
+        <div id="timestamp-status" style="margin-bottom: 12px; padding: 10px; border-radius: 6px; font-size: 13px; background: #f0f0f0;">
+          ⏳ 等待生成
+        </div>
+        <button class="btn btn-primary" id="generate-timestamp-btn" disabled>
+          ✨ 生成智能导航
+        </button>
+      </div>
+
+      <!-- 视频分析信息 -->
+      <div id="video-analysis-info" class="video-info" style="display: block;"></div>
+
+      <div id="timestamp-result" class="video-info" style="display: none;">
+        <h4>🎯 时间戳导航</h4>
+        <div id="timestamp-list" style="max-height: 360px; overflow-y: auto;"></div>
+      </div>
+    </div>
+
+    <!-- Subtitle Tab -->
+    <div id="subtitle-tab" class="tab-content">
+      <div class="video-info">
+        <h4>📝 可用字幕</h4>
+        <div id="subtitle-list">
+          <p style="color: #666; text-align: center; padding: 20px;">
+            正在检测字幕...
+          </p>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="subtitle-download-btn">
+        📝 下载字幕
+      </button>
+
+      <div class="video-info">
+        <h4>字幕格式</h4>
+        <div id="subtitle-format-options">
+          <div class="quality-option">
+            <input type="radio" name="subtitle-format" value="srt" id="sub-srt" checked>
+            <label for="sub-srt">SRT (通用)</label>
+          </div>
+          <div class="quality-option">
+            <input type="radio" name="subtitle-format" value="vtt" id="sub-vtt">
+            <label for="sub-vtt">VTT (Web)</label>
+          </div>
+          <div class="quality-option">
+            <input type="radio" name="subtitle-format" value="txt" id="sub-txt">
+            <label for="sub-txt">TXT (纯文本)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <div class="video-info">
+        <h4>🎬 字幕API设置</h4>
+        <div style="margin: 10px 0;">
+          <label style="display: block; margin-bottom: 5px; font-size: 14px;">Supadata API密钥</label>
+          <input type="password" id="supadata-api-key" placeholder="请输入Supadata API密钥"
+                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+          <p style="font-size: 11px; color: #666; margin: 5px 0;">
+            💡 获取免费API key: <a href="https://dash.supadata.ai" target="_blank">https://dash.supadata.ai</a> (每月100次免费)
+          </p>
+        </div>
+      </div>
+
+      <div class="video-info" style="margin-top: 15px;">
+        <h4>🤖 AI分析设置</h4>
+        <div style="margin: 10px 0;">
+          <label style="display: block; margin-bottom: 5px; font-size: 14px;">AI服务商</label>
+          <select id="ai-provider" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+            <option value="gemini">Google Gemini</option>
+            <option value="siliconflow">SiliconFlow</option>
+          </select>
+        </div>
+        <div style="margin: 10px 0;">
+          <label style="display: block; margin-bottom: 5px; font-size: 14px;">API Base URL</label>
+          <input type="text" id="api-base-url" placeholder="API服务器地址"
+                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div style="margin: 10px 0;">
+          <label style="display: block; margin-bottom: 5px; font-size: 14px;">AI API密钥</label>
+          <input type="password" id="api-key" placeholder="请输入AI API密钥"
+                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+        <div style="margin: 10px 0;">
+          <label style="display: block; margin-bottom: 5px; font-size: 14px;">模型ID</label>
+          <input type="text" id="model-id" placeholder="如: gemini-2.5-flash, gpt-4o-mini"
+                 style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="save-settings-btn">
+        💾 保存设置
+      </button>
+
+      <!-- 缓存管理 -->
+      <div class="video-info" style="margin-top: 15px;">
+        <h4>🗑️ 缓存管理</h4>
+        <p style="font-size: 12px; color: #666; margin: 5px 0 10px 0;">
+          缓存视频字幕和AI分析结果，避免重复调用API
+        </p>
+        <div id="cache-stats" style="margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+          <p style="margin: 5px 0; font-size: 13px;">
+            <strong>缓存视频数：</strong><span id="cache-count">0</span> 个
+          </p>
+          <p style="margin: 5px 0; font-size: 13px;">
+            <strong>缓存大小：</strong><span id="cache-size">0</span> MB
+          </p>
+        </div>
+        <button class="btn btn-primary" id="clear-cache-btn" style="background: #dc3545;">
+          🗑️ 清空所有缓存
+        </button>
+        <p style="font-size: 11px; color: #666; margin: 5px 0;">
+          ⚠️ 清空后需要重新下载字幕和生成AI分析
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

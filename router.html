@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Viewer</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f7f8fa;
+      color: #222;
+    }
+
+    main {
+      max-width: 360px;
+      margin: 64px auto 0;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0 0 18px;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    button {
+      width: 100%;
+      min-height: 42px;
+      margin: 8px 0;
+      border: 0;
+      border-radius: 6px;
+      background: #1f6feb;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #fb7299;
+    }
+
+    #status {
+      margin-top: 14px;
+      color: #555;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Video Viewer</h1>
+    <p id="message">正在识别当前视频平台...</p>
+    <button id="open-youtube" type="button">打开 YouTube</button>
+    <button id="open-bilibili" class="secondary" type="button">打开 Bilibili</button>
+    <div id="status"></div>
+  </main>
+  <script src="router.js"></script>
+</body>
+</html>
