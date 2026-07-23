@@ -1,5 +1,7 @@
 # 🎬 Video Viewer (视频智能助手)
 
+[简体中文](README.md) | [English](README_EN.md)
+
 一个专为 **YouTube** 和 **Bilibili (B站)** 视频页面打造的智能侧边栏浏览器插件。支持字幕提取与导出、时间戳点击跳转、视频音频一键下载，并接入 **Google Gemini** 与 **硅基流动 (SiliconFlow)** 实现 AI 视频摘要和多轮智能问答。
 
 ---
